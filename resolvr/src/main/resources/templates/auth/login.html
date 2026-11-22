@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+<body class="access-page">
+<aside th:replace="~{fragments/access :: panel}"></aside>
+<main class="access-main"><div class="access-card">
+<button type="button" class="theme-link" data-theme>Dark mode</button>
+<h1>Sign in</h1>
+
+<p>Choose your workspace.</p>
+<p role="alert" class="form-error" th:if="${param.error}">Sign-in failed. Check your details, or try again after 15 minutes.</p>
+<p role="alert" class="form-error" th:if="${param.role}">Choose the workspace assigned to your account.</p>
+<p role="status" th:if="${successMessage}" th:text="${successMessage}"></p>
+<form th:action="@{/login}" method="post">
+<fieldset class="role-picker"><legend class="visually-hidden">Workspace</legend>
+<label><input type="radio" name="workspace" value="EMPLOYEE" checked><span>Employee</span></label>
+<label><input type="radio" name="workspace" value="TECHNICIAN"><span>Technician</span></label>
+<label><input type="radio" name="workspace" value="ADMIN"><span>Admin</span></label>
+</fieldset>
+<label>Username<input name="username" autocomplete="username" required></label>
+<label for="password">Password</label><div class="password-field">
+<input id="password" name="password" type="password" autocomplete="current-password" required>
+<button type="button" data-password aria-controls="password">Show</button></div>
+<a class="recover" th:href="@{/forgot-password}">Forgot password?</a>
+<button class="action">Sign in</button></form>
+<nav class="access-links"><a th:href="@{/register}">Create employee account</a><a th:href="@{/request-access}">Request technician access</a></nav>
+</div></main></body></html>

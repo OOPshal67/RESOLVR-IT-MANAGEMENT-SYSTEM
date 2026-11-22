@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ticket Details — ' + incident.incidentKey)}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('tech-assigned')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('TICKET DETAILS')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+
+            <div class="ticket-workspace-grid">
+
+                <div class="conversation-panel">
+
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <h5 class="fw-bold mb-0" th:text="${incident.title}"></h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <form th:if="${incident.status.name() == 'ASSIGNED'}"
+                                  th:action="@{/technician/incidents/{id}/acknowledge(id=${incident.id})}" method="post">
+                                <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                    <i class="bi bi-check2-circle me-1"></i> Acknowledge SLA
+                                </button>
+                            </form>
+                            <form th:if="${incident.status.name() == 'ACKNOWLEDGED'}"
+                                  th:action="@{/technician/incidents/{id}/start(id=${incident.id})}" method="post">
+                                <button type="submit" class="btn btn-sm btn-primary fw-semibold">
+                                    <i class="bi bi-play-fill me-1"></i> Start Investigation
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <div class="note-thread-card public-thread">
+                        <div class="note-left-strip public">
+                            <i class="bi bi-info-circle"></i>
+                            <i class="bi bi-envelope"></i>
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-secondary mb-2">
+                            <span class="text-success fw-semibold"><i class="bi bi-check2-all"></i> Reporter Submission</span>
+                            <span th:text="${incident.reporter.fullName + ' | ' + #temporals.format(incident.createdAt, 'dd.MM.yyyy, HH:mm:ss')}"></span>
+                        </div>
+                        <p class="mb-2" th:text="${incident.description}"></p>
+                        <div class="small text-secondary border-top pt-2 mt-2 d-flex justify-content-between">
+                            <span><strong>Priority Reasoning:</strong> <span th:text="${incident.priorityReasoning}"></span></span>
+                            <span class="badge bg-primary">Reporter</span>
+                        </div>
+                    </div>
+
+
+                    <div th:each="note : ${incident.investigationNotes}"
+                         class="note-thread-card"
+                         th:classappend="${note.internalOnly} ? 'internal-thread' : 'public-thread'">
+                        <div class="note-left-strip" th:classappend="${note.internalOnly} ? 'internal' : 'public'">
+                            <i class="bi bi-info-circle"></i>
+                            <i class="bi" th:classappend="${note.internalOnly} ? 'bi-lock-fill' : 'bi-chat-dots'"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-secondary mb-2">
+                            <span class="fw-semibold" th:text="${note.internalOnly ? 'Internal engineering note' : 'Sent to reporter'}"></span>
+                            <span th:text="${note.author.fullName + ' | ' + #temporals.format(note.createdAt, 'dd.MM.yyyy, HH:mm:ss')}"></span>
+                        </div>
+                        <div class="mb-2" th:text="${note.noteContent}"></div>
+                        <div class="d-flex justify-content-end align-items-center gap-2 small text-secondary">
+                            <span><i class="bi bi-chat-right-text me-1"></i> <span th:text="${note.internalOnly ? 'Internal discussion' : 'Public channel'}"></span></span>
+                            <span class="badge bg-success" th:text="${note.author.initials}"></span>
+                        </div>
+                    </div>
+
+
+                    <div th:each="req : ${incident.informationRequests}" class="note-thread-card public-thread">
+                        <div class="note-left-strip public"><i class="bi bi-question-circle"></i></div>
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <strong class="text-primary">Information Requested from Reporter</strong>
+                            <span th:text="${#temporals.format(req.requestedAt, 'dd.MM.yyyy HH:mm')}"></span>
+                        </div>
+                        <p class="mb-1" th:text="${req.requestMessage}"></p>
+                        <div th:if="${req.responded}" class="mt-2 p-2 bg-white rounded border small">
+                            <strong class="text-success">Employee Response:</strong>
+                            <span th:text="${req.employeeResponse}"></span>
+                        </div>
+                    </div>
+
+
+                    <div th:if="${!#lists.isEmpty(relationships)}" class="d-flex justify-content-between align-items-center p-2 px-3 mb-3 rounded border bg-light small">
+                        <div>
+                            <i class="bi bi-intersect text-warning me-2"></i>
+                            <strong>Related incidents</strong>
+                            <span th:each="rel : ${relationships}" class="ms-1">
+                                Matches <a th:href="@{/technician/incidents/{id}(id=${rel.targetIncident.id})}" class="fw-bold" th:text="${rel.targetIncident.incidentKey}"></a>
+                                (<span th:text="${rel.similarityPercentage + '% similarity'}"></span>)
+                            </span>
+                        </div>
+                        <span class="badge bg-warning text-dark">Correlated</span>
+                    </div>
+
+
+                    <div class="border rounded-3 p-3 bg-light">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button type="button" class="btn btn-sm btn-primary text-white" data-composer-tab="public-reply">
+                                <i class="bi bi-envelope me-1"></i> Email / Reporter Channel
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-composer-tab="internal-note">
+                                <i class="bi bi-journal-code me-1"></i> Internal Note
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-composer-tab="request-info">
+                                <i class="bi bi-question-diamond me-1"></i> Request Info
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-composer-tab="resolve-ticket">
+                                <i class="bi bi-check2-circle me-1"></i> Provide Resolution
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-composer-tab="reassign-ticket">
+                                <i class="bi bi-arrow-left-right me-1"></i> Request Reassignment
+                            </button>
+                        </div>
+
+
+                        <div data-composer-pane="public-reply">
+                            <form th:action="@{/technician/incidents/{id}/note(id=${incident.id})}" method="post">
+                                <input type="hidden" name="internalOnly" value="false">
+                                <textarea name="noteContent" rows="3" class="form-control mb-2" required></textarea>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-secondary"><i class="bi bi-paperclip me-1"></i> Public update triggers in-app &amp; email notification</span>
+                                    <button type="submit" class="btn btn-success btn-sm px-4 fw-semibold">Reply <i class="bi bi-send ms-1"></i></button>
+                                </div>
+                            </form>
+                        </div>
+
+
+                        <div data-composer-pane="internal-note" class="d-none">
+                            <form th:action="@{/technician/incidents/{id}/note(id=${incident.id})}" method="post">
+                                <input type="hidden" name="internalOnly" value="true">
+                                <textarea name="noteContent" rows="3" class="form-control mb-2 border-warning" required></textarea>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-warning btn-sm px-4 fw-semibold">Save Internal Note</button>
+                                </div>
+                            </form>
+                        </div>
+
+
+                        <div data-composer-pane="request-info" class="d-none">
+                            <form th:action="@{/technician/incidents/{id}/request-info(id=${incident.id})}" method="post">
+                                <textarea name="requestMessage" rows="3" class="form-control mb-2" required></textarea>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">Request Info &amp; Set Waiting</button>
+                                </div>
+                            </form>
+                        </div>
+
+
+                        <div data-composer-pane="resolve-ticket" class="d-none">
+                            <form th:action="@{/technician/incidents/{id}/resolve(id=${incident.id})}" method="post">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-8">
+                                        <input type="text" name="rootCause" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" name="timeSpentMinutes" class="form-control form-control-sm" value="35" min="1" required>
+                                    </div>
+                                </div>
+                                <textarea name="resolutionSummary" rows="2" class="form-control form-control-sm mb-2" required></textarea>
+                                <input type="text" name="workaroundApplied" class="form-control form-control-sm mb-2">
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-success btn-sm px-4 fw-semibold">Mark Incident RESOLVED</button>
+                                </div>
+                            </form>
+                        </div>
+
+
+                        <div data-composer-pane="reassign-ticket" class="d-none">
+                            <form th:action="@{/technician/incidents/{id}/reassignment(id=${incident.id})}" method="post">
+                                <input type="text" name="reason" class="form-control form-control-sm mb-2" required>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm px-4">Submit Reassignment Request</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div>
+                    <div class="details-sidebar-card">
+                        <h6 class="fw-bold mb-3" style="color:var(--primary-dark);">Details</h6>
+
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Ticket number:</span>
+                            <span class="fw-bold" th:text="${incident.incidentKey}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Company user:</span>
+                            <div>
+                                <div class="fw-semibold" th:text="${incident.reporter.fullName}"></div>
+                                <div class="text-secondary" style="font-size:11px;" th:text="${incident.reporter.email}"></div>
+                            </div>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Department:</span>
+                            <span th:text="${incident.reporter.department}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Status:</span>
+                            <span class="status-pill" th:classappend="${#strings.toLowerCase(incident.status.name())}" th:text="${incident.status.displayName}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Assignee:</span>
+                            <span th:text="${incident.assignedTechnician != null ? incident.assignedTechnician.fullName : 'Unassigned'}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Category:</span>
+                            <span class="category-chip" th:text="${incident.category.name}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Service:</span>
+                            <span class="fw-semibold" th:text="${incident.service.name}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Ticket type:</span>
+                            <span>Incident (<span th:text="${incident.affectedUsers + ' users'}"></span>)</span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Priority:</span>
+                            <span class="badge" th:style="'background-color:' + ${incident.priority.hexColor}" th:text="${incident.priority.label}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Response SLA:</span>
+                            <span th:text="${#temporals.format(incident.responseDeadline, 'dd.MM.yyyy, HH:mm')}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Age:</span>
+                            <span th:text="${incident.formattedAge}"></span>
+                        </div>
+                        <div class="details-kv-row">
+                            <span class="details-kv-label">Target SLA:</span>
+                            <span th:text="${incident.slaPolicy.formattedResolutionTarget}"></span>
+                        </div>
+                        <div class="details-kv-row border-0">
+                            <span class="details-kv-label">SLA Risk:</span>
+                            <span class="badge" th:style="'background-color:' + ${incident.slaRiskLevel.badgeColor}" th:text="${incident.slaRiskLevel.label}"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="details-sidebar-card">
+                        <h6 class="fw-bold mb-3">SLA timeline</h6>
+                        <div class="d-flex justify-content-between align-items-center small mb-1">
+                            <span class="fw-semibold">Resolution time</span>
+                            <span class="fw-bold" th:classappend="${incident.slaViolated ? 'text-danger' : 'text-dark'}"
+                                  th:text="${incident.formattedRemainingResolutionTime}"></span>
+                        </div>
+                        <div class="progress mb-2" style="height:10px;">
+                            <div class="progress-bar"
+                                 th:classappend="${incident.slaViolated ? 'bg-danger' : 'bg-primary'}"
+                                 th:style="'width:' + ${incident.slaProgressPercentage} + '%'"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-secondary" style="font-size:11px;">
+                            <span th:text="${#temporals.format(incident.createdAt, 'HH:mm')}"></span>
+                            <span th:text="${#temporals.format(incident.resolutionDeadline, 'dd.MM.yyyy HH:mm')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <section class="overview-container p-3 mt-3"><h2 class="h5">Incident timeline</h2>
+                <ol class="list-unstyled"><li class="audit-event" th:each="log : ${auditLogs}" >
+                <time th:text="${#temporals.format(log.actionTimestamp, 'dd MMM yyyy HH:mm')}"></time> ·
+                <strong th:text="${log.actionType}"></strong></li></ol></section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

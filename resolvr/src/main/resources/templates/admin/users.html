@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('User Management')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-users')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('User accounts')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+            <div class="overview-container">
+                <div class="section-accent-header">
+                    <div class="section-accent-title">User accounts</div>
+                    <a th:href="@{/admin/technicians}" class="btn btn-sm btn-primary">Manage Technicians &amp; Skills</a>
+                </div>
+                <p><a th:href="@{/admin/access}">Review requests and create administrators</a></p><div class="table-responsive">
+                    <table class="resolvr-table">
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${users}">
+                            <td class="fw-bold" th:text="${u.roleIdentifierCode}"></td>
+                            <td class="fw-semibold" th:text="${u.fullName}"></td>
+                            <td><code th:text="${u.username}"></code></td>
+                            <td th:text="${u.email}"></td>
+                            <td><span class="badge bg-primary" th:text="${u.role.displayName}"></span></td>
+                            <td th:text="${u.department}"></td>
+                            <td>
+                                <span th:if="${u.active}" class="badge bg-success">Active</span>
+                                <span th:if="${!u.active}" class="badge bg-secondary">Deactivated</span>
+                            </td>
+                            <td>
+                                <form th:if="${u.username != currentUser.username}" th:action="@{/admin/users/{id}/toggle-active(id=${u.id})}" method="post"
+                                      data-confirm="Toggle active status for this user account?">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                            th:text="${u.active ? 'Deactivate' : 'Activate'}"></button>
+                                </form>
+                                <form th:action="@{/admin/users/{id}/recovery(id=${u.id})}" method="post"><button class="btn btn-link btn-sm">Issue recovery code</button></form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('System Audit Trail')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-audit')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('Audit log')}"></header>
+        <main class="app-content">
+            <div class="overview-container">
+                <div class="section-accent-header">
+                    <div class="section-accent-title">Chronological Security &amp; Incident Event Log</div>
+                    <form th:action="@{/admin/audit}" method="get" class="d-flex gap-2">
+                        <select name="actionType" class="form-select form-select-sm">
+                            <option value="ALL">All Event Types</option>
+                            <option value="INCIDENT_CREATED" th:selected="${selectedActionType == 'INCIDENT_CREATED'}">INCIDENT_CREATED</option>
+                            <option value="INCIDENT_ASSIGNED" th:selected="${selectedActionType == 'INCIDENT_ASSIGNED'}">INCIDENT_ASSIGNED</option>
+                            <option value="INCIDENT_ACKNOWLEDGED" th:selected="${selectedActionType == 'INCIDENT_ACKNOWLEDGED'}">INCIDENT_ACKNOWLEDGED</option>
+                            <option value="INCIDENT_RESOLVED" th:selected="${selectedActionType == 'INCIDENT_RESOLVED'}">INCIDENT_RESOLVED</option>
+                            <option value="INCIDENT_CLOSED" th:selected="${selectedActionType == 'INCIDENT_CLOSED'}">INCIDENT_CLOSED</option>
+                            <option value="SLA_VIOLATION_DETECTED" th:selected="${selectedActionType == 'SLA_VIOLATION_DETECTED'}">SLA_VIOLATION_DETECTED</option>
+                            <option value="INCIDENT_ESCALATED" th:selected="${selectedActionType == 'INCIDENT_ESCALATED'}">INCIDENT_ESCALATED</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="resolvr-table">
+                        <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Incident</th>
+                            <th>Actor</th>
+                            <th>Role</th>
+                            <th>Action Type</th>
+                            <th>Transition</th>
+                            <th>Description &amp; Metadata</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="log : ${auditLogs}">
+                            <td class="small text-secondary" th:text="${#temporals.format(log.actionTimestamp, 'dd MMM yyyy HH:mm:ss')}"></td>
+                            <td class="fw-bold" th:text="${log.incidentKey}"></td>
+                            <td><code th:text="${log.actorUsername}"></code></td>
+                            <td><span class="category-chip" th:text="${log.actorRole}"></span></td>
+                            <td><span class="badge bg-dark" th:text="${log.actionType}"></span></td>
+                            <td class="small">
+                                <span th:if="${log.previousState != null}" th:text="${log.previousState + ' → ' + log.newState}"></span>
+                            </td>
+                            <td>
+                                <div class="fw-medium" th:text="${log.description}"></div>
+                                <div class="small text-secondary" th:if="${log.metadata != null}" th:text="${log.metadata}"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

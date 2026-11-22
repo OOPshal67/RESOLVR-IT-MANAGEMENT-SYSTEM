@@ -1,0 +1,48 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### OS & Logs ###
+.DS_Store
+Thumbs.db
+*.log
+uploads/
+.env
+
+# Local configuration, credentials, and build output
+.env.*
+!.env.example
+dev-credentials/
+*.pem
+*.key
+*.p12
+*.jks
+*.class
+*.zip

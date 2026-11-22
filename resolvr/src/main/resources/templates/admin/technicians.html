@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Technician Management')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-technicians')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('TECHNICIAN ROSTER, SKILLS & WORKLOAD CAPACITY')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="overview-container">
+                        <div class="section-accent-header">
+                            <div class="section-accent-title">Support Engineers &amp; Skill Matrix</div>
+                        </div>
+                        <div th:each="t : ${technicians}" class="p-3 border rounded-3 mb-3 bg-white">
+                            <form th:action="@{/admin/technicians/{id}/update(id=${t.id})}" method="post">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="fw-bold fs-6" th:text="${t.fullName}"></span>
+                                        <span class="badge bg-dark ms-1" th:text="${t.technicianCode}"></span>
+                                        <span th:if="${t.teamLead}" class="badge bg-warning text-dark ms-1">Team Lead</span>
+                                        <div class="small text-secondary" th:text="${t.specialization + ' • ' + t.experienceYears + ' yrs exp'}"></div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" name="available" value="true" th:checked="${t.available}">
+                                            <label class="form-check-label small fw-semibold">Available</label>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="width:140px;">
+                                            <span class="input-group-text">Max Load</span>
+                                            <input type="number" name="maxWorkload" class="form-control" min="1" max="20" th:value="${t.maxWorkload}">
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                    </div>
+                                </div>
+                                <div class="small mb-2">
+                                    <strong>Active Workload:</strong> <span th:text="${t.currentWorkload + ' / ' + t.maxWorkload}"></span>
+                                    (<span th:text="${t.utilizationPercentage + '% utilization'}"></span>)
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div th:each="sk : ${allSkills}" class="form-check form-check-inline small m-0">
+                                        <input class="form-check-input" type="checkbox" name="skillIds" th:value="${sk.id}"
+                                               th:checked="${t.skills.contains(sk)}">
+                                        <label class="form-check-label" th:text="${sk.categoryCode}"></label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="overview-container">
+                        <div class="section-accent-header">
+                            <div class="section-accent-title">Onboard Technician</div>
+                        </div>
+                        <form th:action="@{/admin/technicians}" method="post">
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="fullName">Full Name *</label>
+                                <input type="text" name="fullName" class="form-control form-control-sm" required id="fullName">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="username">Username *</label>
+                                <input type="text" name="username" class="form-control form-control-sm" required id="username">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="email">Email *</label>
+                                <input type="email" name="email" class="form-control form-control-sm" required id="email">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="password">Temporary Password *</label>
+                                <input type="password" name="password" class="form-control form-control-sm" minlength="12" autocomplete="new-password" required id="password">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="department">Department *</label>
+                                <input type="text" name="department" class="form-control form-control-sm" required id="department">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="specialization">Specialization *</label>
+                                <input type="text" name="specialization" class="form-control form-control-sm" required id="specialization">
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold" for="maxWorkload">Max Workload</label>
+                                    <input type="number" name="maxWorkload" class="form-control form-control-sm" value="5" min="1" id="maxWorkload">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold" for="experienceYears">Experience (Yrs)</label>
+                                    <input type="number" name="experienceYears" class="form-control form-control-sm" value="3" min="0" id="experienceYears">
+                                </div>
+                            </div>
+                            <div class="form-check mb-3 small">
+                                <input class="form-check-input" type="checkbox" name="teamLead" value="true">
+                                <label class="form-check-label fw-semibold">Designate as Team Lead (Escalation Level 2)</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">Create Technician Account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

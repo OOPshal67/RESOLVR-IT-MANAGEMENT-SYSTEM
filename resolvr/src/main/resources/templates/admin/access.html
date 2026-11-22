@@ -1,0 +1,15 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head('Accounts')}"></head>
+<body><div class="app-shell"><aside th:replace="~{fragments/layout :: sidebar('admin-users')}"></aside><div class="app-main">
+<header th:replace="~{fragments/layout :: topbar('Accounts')}"></header><main class="app-content account-review"><h1>Technician requests</h1><p th:if="${#lists.isEmpty(requests)}">No technician requests are waiting for review.</p>
+<article th:each="req : ${requests}" class="overview-container p-3 mb-2">
+<h2 class="h5" th:text="${req.full_name}"></h2><p th:text="|${req.username} · ${req.department} · ${req.email}|"></p>
+<form method="post" th:action="@{/admin/access/{id}(id=${req.id})}">
+<button class="btn btn-primary" name="approve" value="true">Approve</button>
+<button class="btn btn-outline-secondary" name="approve" value="false">Reject</button></form></article>
+<h2 class="mt-4">Create administrator</h2><form th:action="@{/admin/accounts}" method="post">
+<label>Full name<input type="text" name="fullName" required></label>
+<label>Username<input type="text" name="username" required></label>
+<label>Email<input type="email" name="email" required></label>
+<label>Department<input type="text" name="department" required></label>
+<label>Password (12 or more characters)<input type="password" name="password" minlength="12" maxlength="72" autocomplete="new-password" required></label>
+<button class="action">Create administrator</button></form></main></div></div></body></html>

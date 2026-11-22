@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Notifications Center')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('notifications')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('NOTIFICATION CENTER (IN-APP & SIMULATED EMAIL)')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+            <div class="overview-container">
+                <div class="section-accent-header">
+                    <div class="section-accent-title">Multi-Channel Incident Notifications</div>
+                    <form th:action="@{/notifications/read-all}" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                        </button>
+                    </form>
+                </div>
+
+                <div th:if="${#lists.isEmpty(notifications)}" class="text-center py-5 text-secondary">
+                    <i class="bi bi-bell-slash fs-2 d-block mb-2"></i>
+                    No notifications recorded for your account yet.
+                </div>
+
+                <div class="table-responsive" th:if="${!#lists.isEmpty(notifications)}">
+                    <table class="resolvr-table">
+                        <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Event Type</th>
+                            <th>Title &amp; Message</th>
+                            <th>Incident</th>
+                            <th>Timestamp</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="n : ${notifications}" th:classappend="${!n.readStatus} ? 'selected-row'">
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${n.channel.name() == 'IN_APP'} ? 'bg-primary' : 'bg-dark'"
+                                      th:text="${n.channel.name()}"></span>
+                            </td>
+                            <td><span class="category-chip" th:text="${n.notificationType}"></span></td>
+                            <td>
+                                <div class="fw-bold" th:text="${n.title}"></div>
+                                <div class="text-secondary small" th:text="${n.message}"></div>
+                            </td>
+                            <td>
+                                <a th:if="${n.incident != null}"
+                                   th:href="@{/incidents/{id}(id=${n.incident.id})}"
+                                   class="fw-bold text-decoration-none"
+                                   th:text="${n.incident.incidentKey}"></a>
+                                <span th:if="${n.incident == null}" class="text-muted">—</span>
+                            </td>
+                            <td class="small text-secondary" th:text="${#temporals.format(n.createdAt, 'dd MMM yyyy HH:mm')}"></td>
+                            <td>
+                                <span th:if="${!n.readStatus}" class="badge bg-warning text-dark">Unread</span>
+                                <span th:if="${n.readStatus}" class="badge bg-light text-secondary border">Read</span>
+                            </td>
+                            <td>
+                                <form th:if="${!n.readStatus}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Mark Read</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

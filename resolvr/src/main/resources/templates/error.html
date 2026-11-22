@@ -1,0 +1,4 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Request error')}"></head><body><main class="access-main min-vh-100">
+<div class="access-card"><p th:text="${status}"></p><h1>Page unavailable</h1>
+<p>Return to your workspace to continue.</p><a th:href="@{/}">Open workspace</a></div></main></body></html>

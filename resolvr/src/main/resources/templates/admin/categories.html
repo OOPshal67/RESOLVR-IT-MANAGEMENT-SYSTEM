@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Category Management')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-categories')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('INCIDENT CLASSIFICATION CATEGORIES')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="overview-container">
+                        <div class="section-accent-header">
+                            <div class="section-accent-title">Incident Classification Taxonomy</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="resolvr-table">
+                                <thead>
+                                <tr>
+                                    <th>Category Code</th>
+                                    <th>Display Name</th>
+                                    <th>Description</th>
+                                    <th>Priority Weight Multiplier</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="c : ${categories}">
+                                    <td><span class="category-chip" th:text="${c.code}"></span></td>
+                                    <td class="fw-semibold" th:text="${c.name}"></td>
+                                    <td class="small text-secondary" th:text="${c.description}"></td>
+                                    <td class="fw-bold" th:text="${c.defaultWeight + 'x'}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="overview-container">
+                        <div class="section-accent-header">
+                            <div class="section-accent-title">Add Incident Category</div>
+                        </div>
+                        <form th:action="@{/admin/categories}" method="post">
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="code">Category Code *</label>
+                                <input type="text" name="code" class="form-control form-control-sm" required id="code">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="name">Category Name *</label>
+                                <input type="text" name="name" class="form-control form-control-sm" required id="name">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="defaultWeight">Priority Weight Multiplier *</label>
+                                <input type="number" step="0.05" min="0.5" max="3.0" name="defaultWeight" class="form-control form-control-sm" value="1.15" required id="defaultWeight">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold" for="description">Description *</label>
+                                <textarea name="description" rows="2" class="form-control form-control-sm" required id="description"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">Create Category</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

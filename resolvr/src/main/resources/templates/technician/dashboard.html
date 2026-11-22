@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Technician Dashboard')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('tech-dashboard')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('TECHNICIAN SUPPORT WORKSPACE')}"></header>
+        <main class="app-content">
+            <div class="workload-strip" th:if="${technician != null}"><strong>My workload</strong>
+            <meter min="0" th:max="${technician.maxWorkload}" th:value="${technician.currentWorkload}" aria-label="Assigned incidents"></meter>
+            <span th:text="|${technician.currentWorkload} / ${technician.maxWorkload} incidents|"></span></div>
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="overview-container mb-4">
+                <div class="section-accent-header">
+                    <div class="section-accent-title">Support Engineer SLA &amp; Workload Overview</div>
+                    <span class="period-pill" th:if="${technician != null}"
+                          th:text="'Capacity: ' + ${technician.currentWorkload} + ' / ' + ${technician.maxWorkload} + ' Active'"></span>
+                </div>
+
+
+                <div class="kpi-pastel-grid">
+                    <div class="kpi-pastel-card blue">
+                        <div class="kpi-icon-box text-primary"><i class="bi bi-kanban"></i></div>
+                        <div>
+                            <div class="kpi-label">Active Assigned</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-value" th:text="${activeCount}"></span>
+                                <span class="kpi-delta text-primary">Queue</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-pastel-card amber">
+                        <div class="kpi-icon-box text-warning"><i class="bi bi-bell-fill"></i></div>
+                        <div>
+                            <div class="kpi-label">Needs Acknowledgment</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-value" th:text="${unackCount}"></span>
+                                <span class="kpi-delta text-warning">Response SLA</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-pastel-card purple">
+                        <div class="kpi-icon-box text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        <div>
+                            <div class="kpi-label">SLA High Risk / Breached</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-value" th:text="${atRiskCount}"></span>
+                                <span class="kpi-delta text-danger">Priority</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-pastel-card green">
+                        <div class="kpi-icon-box text-success"><i class="bi bi-check2-all"></i></div>
+                        <div>
+                            <div class="kpi-label">Resolved by Me</div>
+                            <div class="kpi-value-row">
+                                <span class="kpi-value" th:text="${resolvedCount}"></span>
+                                <span class="kpi-delta text-success">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div th:if="${technician != null}" class="p-3 bg-light rounded-3 border mb-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="small fw-bold text-secondary text-uppercase me-2">Verified Technical Skills:</span>
+                        <span th:each="sk : ${technician.skills}" class="badge bg-primary me-1" th:text="${sk.skillName}"></span>
+                    </div>
+                    <div class="small text-secondary">
+                        <strong>Specialization:</strong> <span th:text="${technician.specialization}"></span> |
+                        <strong>Experience:</strong> <span th:text="${technician.experienceYears + ' yrs'}"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold mb-0">My Assigned Incident Queue</h6>
+                    <a th:href="@{/technician/incidents}" class="small text-decoration-none">Open 3-Pane Split Workspace &rarr;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="resolvr-table">
+                        <thead>
+                        <tr>
+                            <th># ID</th>
+                            <th>Issue Title</th>
+                            <th>Service</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>SLA Risk</th>
+                            <th>Remaining Time</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="inc : ${assignedIncidents}">
+                            <td class="fw-bold" th:text="${inc.incidentKey}"></td>
+                            <td>
+                                <i class="bi bi-flag-fill me-1" th:classappend="'flag-' + ${#strings.toLowerCase(inc.priority.name())}"></i>
+                                <a th:href="@{/technician/incidents/{id}(id=${inc.id})}" class="text-decoration-none fw-semibold text-dark" th:text="${inc.title}"></a>
+                            </td>
+                            <td th:text="${inc.service.name}"></td>
+                            <td><span class="badge" th:style="'background-color:' + ${inc.priority.hexColor}" th:text="${inc.priority.label}"></span></td>
+                            <td><span class="status-pill" th:classappend="${#strings.toLowerCase(inc.status.name())}" th:text="${inc.status.displayName}"></span></td>
+                            <td><span class="badge" th:style="'background-color:' + ${inc.slaRiskLevel.badgeColor}" th:text="${inc.slaRiskLevel.label}"></span></td>
+                            <td class="small fw-semibold" th:text="${inc.formattedRemainingResolutionTime}"></td>
+                            <td class="d-flex gap-1">
+                                <form th:if="${inc.status.name() == 'ASSIGNED'}" th:action="@{/technician/incidents/{id}/acknowledge(id=${inc.id})}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-success">Acknowledge</button>
+                                </form>
+                                <a th:href="@{/technician/incidents/{id}(id=${inc.id})}" class="btn btn-sm btn-primary">Investigate</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

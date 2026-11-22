@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Request technician access')}"></head>
+<body class="access-page">
+<aside th:replace="~{fragments/access :: panel}"></aside>
+<main class="access-main"><div class="access-card">
+<button type="button" class="theme-link" data-theme>Dark mode</button>
+<h1>Request technician access</h1>
+<p>An administrator reviews your request before you can sign in.</p><p th:if="${errorMessage}" th:text="${errorMessage}" role="alert"></p><form th:object="${accountForm}" th:action="@{/request-access}" method="post">
+<label>Full name<input type="text" th:field="*{fullName}" required></label>
+<label>Username<input type="text" th:field="*{username}" required></label>
+<label>Email<input type="email" th:field="*{email}" required></label>
+<label>Department<input type="text" th:field="*{department}" required></label>
+<label>Password (12 or more characters)<input type="password" name="password" minlength="12" maxlength="72" autocomplete="new-password" required></label>
+<ul class="form-error" th:if="${#fields.hasAnyErrors()}"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul><button class="action">Send request</button></form><a th:href="@{/login}">Back to sign in</a>
+</div></main></body></html>

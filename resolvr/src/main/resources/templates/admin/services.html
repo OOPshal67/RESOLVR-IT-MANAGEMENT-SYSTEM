@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('IT Services Catalog')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-services')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('IT services')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="overview-container">
+                        <div class="section-accent-header">
+                            <div class="section-accent-title">Configured IT Services &amp; Business Criticality</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="resolvr-table">
+                                <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Service Name</th>
+                                    <th>Owner Dept</th>
+                                    <th>Criticality</th>
+                                    <th>Health Status</th>
+                                    <th>Update</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="s : ${services}">
+                                    <td class="fw-bold" th:text="${s.serviceCode}"></td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${s.name}"></div>
+                                        <div class="small text-secondary" th:text="${s.description}"></div>
+                                    </td>
+                                    <td th:text="${s.ownerDepartment}"></td>
+                                    <td colspan="3">
+                                        <form th:action="@{/admin/services/{id}/status(id=${s.id})}" method="post" class="d-flex gap-2 align-items-center">
+                                            <select name="businessCriticality" class="form-select form-select-sm">
+                                                <option th:each="c : ${criticalities}" th:value="${c}" th:selected="${s.businessCriticality == c}" th:text="${c.name()}"></option>
+                                            </select>
+                                            <select name="operationalStatus" class="form-select form-select-sm">
+                                                <option value="OPERATIONAL" th:selected="${s.operationalStatus == 'OPERATIONAL'}">OPERATIONAL</option>
+                                                <option value="DEGRADED" th:selected="${s.operationalStatus == 'DEGRADED'}">DEGRADED</option>
+                                                <option value="OUTAGE" th:selected="${s.operationalStatus == 'OUTAGE'}">OUTAGE</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="overview-container">
+                        <div class="section-accent-header">
+                            <div class="section-accent-title">Register New IT Service</div>
+                        </div>
+                        <form th:action="@{/admin/services}" method="post">
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="serviceCode">Service Code *</label>
+                                <input type="text" name="serviceCode" class="form-control form-control-sm" required id="serviceCode">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="name">Service Name *</label>
+                                <input type="text" name="name" class="form-control form-control-sm" required id="name">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="businessCriticality">Business Criticality *</label>
+                                <select name="businessCriticality" class="form-select form-select-sm" id="businessCriticality">
+                                    <option th:each="c : ${criticalities}" th:value="${c}" th:text="${c.name() + ' — ' + c.description}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold" for="ownerDepartment">Owner Department *</label>
+                                <input type="text" name="ownerDepartment" class="form-control form-control-sm"  required id="ownerDepartment">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold" for="description">Description *</label>
+                                <textarea name="description" rows="2" class="form-control form-control-sm" required id="description"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">Add IT Service</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

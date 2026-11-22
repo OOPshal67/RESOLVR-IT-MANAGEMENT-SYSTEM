@@ -1,0 +1,3 @@
+<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head('Accounts')}"></head>
+<body><div class="app-shell"><aside th:replace="~{fragments/layout :: sidebar('admin-users')}"></aside><div class="app-main">
+<header th:replace="~{fragments/layout :: topbar('Accounts')}"></header><main class="app-content account-review"><h1>Recovery code</h1><p>Give this code to the account owner after verifying their identity. It works once and expires in 15 minutes.</p><code th:text="${token}"></code><p><a th:href="@{/admin/users}">Back to users</a></p></main></div></div></body></html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Assignment and priority rules')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-strategies')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('STRATEGY PATTERN CONFIGURATION ENGINE')}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+            <div class="overview-container">
+                <div class="section-accent-header">
+                    <div class="section-accent-title">Runtime Polymorphic Strategy Selection</div>
+                    <span class="badge bg-primary">OOP Strategy Pattern</span>
+                </div>
+
+                <form th:action="@{/admin/strategies}" method="post" class="row g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 h-100 bg-light">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-diagram-3 text-primary me-2"></i>Technician Assignment Strategy</h6>
+                            <p class="small text-secondary">Select which concrete implementation of <code>TechnicianAssignmentStrategy</code> is invoked when assigning incidents.</p>
+                            <div th:each="s : ${assignmentStrategies}" class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="assignmentStrategy"
+                                       th:value="${s.strategyCode}" th:checked="${s.strategyCode == activeAssignmentStrategy}">
+                                <label class="form-check-label fw-semibold" th:text="${s.strategyCode + ' — ' + s.strategyDisplayName}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 h-100 bg-light">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-calculator text-primary me-2"></i>Priority Calculation Strategy</h6>
+                            <p class="small text-secondary">Select which concrete implementation of <code>PriorityCalculationStrategy</code> determines P1–P4 priorities.</p>
+                            <div th:each="p : ${priorityStrategies}" class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="priorityStrategy"
+                                       th:value="${p.strategyCode}" th:checked="${p.strategyCode == activePriorityStrategy}">
+                                <label class="form-check-label fw-semibold" th:text="${p.strategyCode + ' — ' + p.strategyDisplayName}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">Apply Active Strategies</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<section xmlns:th="http://www.thymeleaf.org" th:fragment="panel" class="signal">
+  <a class="signal-brand" th:href="@{/login}"><span aria-hidden="true">◉</span> RESOLVR</a>
+  <div class="signal-board">
+    <p class="signal-label">Service desk · Sample queue</p>
+    <div class="signal-title"><h2>Incident queue</h2><div class="clock" aria-label="Sample resolution countdown"><span data-countdown>14:59</span></div></div>
+    <div class="feed-window"><div class="feed-track">
+      <th:block th:each="copy : ${#numbers.sequence(1,2)}"><div class="feed-set" th:attr="aria-hidden=${copy == 2}">
+        <div data-priority="P1"><b>P1</b><span>Fee payment gateway offline</span></div>
+        <div data-priority="P2"><b>P2</b><span>Hostel Wi-Fi dropping connections</span></div>
+        <div data-priority="P3"><b>P3</b><span>Library printer queue stalled</span></div>
+        <div data-priority="P4"><b>P4</b><span>Lab software update requested</span></div>
+      </div></th:block>
+    </div></div>
+    <button class="pause-feed" type="button" data-motion aria-pressed="false">Pause movement</button>
+  </div>
+</section>

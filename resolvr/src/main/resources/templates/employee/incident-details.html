@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(incident.incidentKey + ' Details')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar('employee-history')}"></aside>
+    <div class="app-main">
+        <header th:replace="~{fragments/layout :: topbar('INCIDENT DETAILS — ' + incident.incidentKey)}"></header>
+        <main class="app-content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+
+            <div class="overview-container mb-3 py-3">
+                <div class="small fw-bold text-secondary text-uppercase mb-1">Incident Lifecycle State Tracker</div>
+                <div class="lifecycle-stepper">
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 1 ? 'completed' : (incident.status.stepOrder == 1 ? 'current' : '')}">1. NEW</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 2 ? 'completed' : (incident.status.stepOrder == 2 ? 'current' : '')}">2. CLASSIFIED</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 3 ? 'completed' : (incident.status.stepOrder == 3 ? 'current' : '')}">3. ASSIGNED</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 4 ? 'completed' : (incident.status.stepOrder == 4 ? 'current' : '')}">4. ACKNOWLEDGED</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 5 ? 'completed' : (incident.status.stepOrder == 5 ? 'current' : '')}">5. IN_PROGRESS</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 6 ? 'completed' : (incident.status.stepOrder == 6 ? 'current' : '')}">6. RESOLVED</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder > 7 ? 'completed' : (incident.status.stepOrder == 7 ? 'current' : '')}">7. VERIFIED</div>
+                    <div class="lifecycle-step" th:classappend="${incident.status.stepOrder == 8 ? 'current' : ''}">8. CLOSED</div>
+                </div>
+            </div>
+
+
+            <div class="ticket-workspace-grid">
+                <div class="conversation-panel">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <h5 class="fw-bold mb-0" th:text="${incident.title}"></h5>
+                        <span class="status-pill" th:classappend="${#strings.toLowerCase(incident.status.name())}" th:text="${incident.status.displayName}"></span>
+                    </div>
+
+
+                    <div class="note-thread-card public-thread">
+                        <div class="note-left-strip public"><i class="bi bi-person-fill"></i></div>
+                        <div class="d-flex justify-content-between small text-secondary mb-2">
+                            <strong class="text-dark" th:text="${incident.reporter.fullName + ' (Reporter)'}"></strong>
+                            <span th:text="${#temporals.format(incident.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                        </div>
+                        <p class="mb-0" th:text="${incident.description}"></p>
+                    </div>
+
+
+                    <div th:each="req : ${incident.informationRequests}" th:if="${!req.responded}"
+                         class="alert alert-warning border-warning mb-3">
+                        <div class="fw-bold mb-1"><i class="bi bi-question-circle-fill me-1"></i>Technician Requested Additional Information:</div>
+                        <p class="mb-2 small" th:text="${req.requestMessage}"></p>
+                        <form th:action="@{/employee/incidents/{id}/respond(id=${incident.id})}" method="post">
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="responseText" class="form-control" required>
+                                <button type="submit" class="btn btn-warning fw-semibold">Send Response</button>
+                            </div>
+                        </form>
+                    </div>
+
+
+                    <div th:each="note : ${incident.investigationNotes}" th:if="${!note.internalOnly}"
+                         class="note-thread-card public-thread">
+                        <div class="note-left-strip public"><i class="bi bi-chat-dots"></i></div>
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <strong class="text-dark" th:text="${note.author.fullName}"></strong>
+                            <span th:text="${#temporals.format(note.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                        </div>
+                        <div th:text="${note.noteContent}"></div>
+                    </div>
+
+
+                    <div th:if="${incident.resolution != null}" class="p-3 rounded-3 border border-success bg-success-subtle mb-3">
+                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-check2-circle me-1"></i>Official Technician Resolution</h6>
+                        <div class="small mb-1"><strong>Root Cause:</strong> <span th:text="${incident.resolution.rootCause}"></span></div>
+                        <div class="small mb-1"><strong>Resolution Summary:</strong> <span th:text="${incident.resolution.resolutionSummary}"></span></div>
+                        <div class="small text-secondary">Resolved by <span th:text="${incident.resolution.resolvedBy.fullName}"></span></div>
+
+                        <div th:if="${incident.status.name() == 'RESOLVED'}" class="mt-3 pt-3 border-top border-success">
+                            <form th:action="@{/employee/incidents/{id}/verify-close(id=${incident.id})}" method="post">
+                                <div class="fw-bold small mb-2">Verify Resolution &amp; Close Incident</div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-4">
+                                        <select name="rating" class="form-select form-select-sm">
+                                            <option value="5">5 Stars — Excellent</option>
+                                            <option value="4">4 Stars — Good</option>
+                                            <option value="3">3 Stars — Satisfactory</option>
+                                            <option value="2">2 Stars — Subpar</option>
+                                            <option value="1">1 Star — Poor</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text" name="comments" class="form-control form-control-sm" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-sm fw-semibold">
+                                    <i class="bi bi-check-circle me-1"></i> Verify Resolution &amp; Close Ticket
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <form th:if="${incident.status.name() != 'CLOSED'}" th:action="@{/employee/incidents/{id}/comment(id=${incident.id})}" method="post" class="mt-3">
+                        <label class="form-label small fw-bold" for="content">Add Additional Information / Reply</label>
+                        <textarea name="content" rows="3" class="form-control mb-2" required id="content"></textarea>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary btn-sm px-4">Post Update</button>
+                        </div>
+                    </form>
+                </div>
+
+
+                <div>
+                    <div class="details-sidebar-card">
+                        <h6 class="fw-bold mb-3">Details</h6>
+                        <div class="details-kv-row"><span class="details-kv-label">Ticket number:</span><span class="fw-bold" th:text="${incident.incidentKey}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Reporter:</span><span th:text="${incident.reporter.fullName}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Status:</span><span class="status-pill" th:classappend="${#strings.toLowerCase(incident.status.name())}" th:text="${incident.status.displayName}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Assignee:</span><span th:text="${incident.assignedTechnician != null ? incident.assignedTechnician.fullName : 'Unassigned'}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Category:</span><span th:text="${incident.category.name}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Service:</span><span th:text="${incident.service.name}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Priority:</span><span class="badge" th:style="'background-color:' + ${incident.priority.hexColor}" th:text="${incident.priority.label}"></span></div>
+                        <div class="details-kv-row"><span class="details-kv-label">Age:</span><span th:text="${incident.formattedAge}"></span></div>
+                    </div>
+
+                    <div class="details-sidebar-card">
+                        <h6 class="fw-bold mb-2">SLA timeline</h6>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Resolution time</span>
+                            <strong th:text="${incident.formattedRemainingResolutionTime}"></strong>
+                        </div>
+                        <div class="progress mb-2" style="height:8px;">
+                            <div class="progress-bar" th:classappend="${incident.slaViolated ? 'bg-danger' : 'bg-primary'}"
+                                 th:style="'width:' + ${incident.slaProgressPercentage} + '%'"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-secondary" style="font-size:11px;">
+                            <span th:text="${#temporals.format(incident.createdAt, 'HH:mm')}"></span>
+                            <span th:text="${#temporals.format(incident.resolutionDeadline, 'dd.MM.yyyy HH:mm')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <section class="overview-container p-3 mt-3"><h2 class="h5">Incident timeline</h2>
+                <ol class="list-unstyled"><li class="audit-event" th:each="log : ${auditLogs}" th:if="${log.previousState != null and log.newState != log.previousState}">
+                <time th:text="${#temporals.format(log.actionTimestamp, 'dd MMM yyyy HH:mm')}"></time> ·
+                <strong th:text="${log.actionType}"></strong></li></ol></section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
